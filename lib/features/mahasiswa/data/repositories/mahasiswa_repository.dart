@@ -1,52 +1,46 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_syanda/features/mahasiswa/data/models/mahasiswa_model.dart';
 
 class MahasiswaRepository {
-  Future<List<MahasiswaModel>> getMahasiswaList() async {
-    await Future.delayed(const Duration(seconds: 1));
+  final Dio _dio = Dio();
 
-    return [
-      MahasiswaModel(
-        nama: 'Marshanda Hadi Susanti',
-        nim: '434241072',
-        email: 'marshanda.hadi@gmail.com',
-        jurusan: 'Teknik Informatika',
-        angkatan: '2024',
-      ),
-      MahasiswaModel(
-        nama: 'Febby arsyana',
-        nim: '2021002',
-        email: 'febby.arsyana@gmail.com',
-        jurusan: 'Teknik Informatika',
-        angkatan: '2023',
-      ),
-      MahasiswaModel(
-        nama: 'Ahmad Fauzi',
-        nim: '2022001',
-        email: 'ahmad.fauzi@gmail.com',
-        jurusan: 'Teknik Informatika',
-        angkatan: '2023',
-      ),
-      MahasiswaModel(
-        nama: 'Bintang Gana',
-        nim: '2022002',
-        email: 'bintang.gana@gmail.com',
-        jurusan: 'Teknik Informatika',
-        angkatan: '2024',
-      ),
-      MahasiswaModel(
-        nama: 'Bella Rahma',
-        nim: '2022002',
-        email: 'bella.rahma@gmail.com',
-        jurusan: 'Teknik Informatika',
-        angkatan: '2024',
-      ),
-      MahasiswaModel(
-        nama: 'Dewi Lestari',
-        nim: '2022002',
-        email: 'dewi.lestari@gmail.com',
-        jurusan: 'Teknik Informatika',
-        angkatan: '2024',
-      ),
-    ];
+  /// HTTP
+  Future<List<MahasiswaModel>> getMahasiswaListHttp() async {
+    final response = await http.get(
+      Uri.parse('https://jsonplaceholder.typicode.com/comments'),
+      headers: {'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      print(data); // Debug
+      return data.map((json) => MahasiswaModel.fromJson(json)).toList();
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}');
+      throw Exception('Gagal memuat data mahasiswa: ${response.statusCode}');
+    }
+  }
+
+  /// DIO
+  Future<List<MahasiswaModel>> getMahasiswaList() async {
+    try {
+      final response = await _dio.get(
+        'https://jsonplaceholder.typicode.com/comments',
+        options: Options(headers: {'Accept': 'application/json'}),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        print(data); // Debug
+        return data.map((json) => MahasiswaModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Gagal memuat data mahasiswa: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('DioError: ${e.message}');
+      throw Exception('Gagal memuat data mahasiswa: ${e.message}');
+    }
   }
 }
